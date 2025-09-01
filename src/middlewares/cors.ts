@@ -6,7 +6,8 @@ const ACCEPTED_ORIGINS = [
   "http://localhost:3000",
   "http://localhost:3001",
   "http://localhost:3003",
-  "https://e-commerce-api-production-0e59.up.railway.app/"
+  "https://e-commerce-api-production-0e59.up.railway.app/",
+  "https://logibuy-frontend.vercel.app/",
 ];
 
 export const corsMiddleware = ({ acceptedOrigins = ACCEPTED_ORIGINS } = {}) =>
