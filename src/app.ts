@@ -19,6 +19,11 @@ app.use(corsMiddleware);
 app.options("*", corsMiddleware);
 
 // 🔹 Rutas
+app.use((req, res, next) => {
+  console.log(req.method, req.url);
+  next();
+});
+
 app.use("/api/products", productsRouter);
 app.use("/api/categories", categoriesRouter);
 app.use("/api/users", usersRouter);
