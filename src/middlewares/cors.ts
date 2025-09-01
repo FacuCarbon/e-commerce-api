@@ -10,12 +10,16 @@ const ACCEPTED_ORIGINS = [
   "https://logibuy-frontend.vercel.app",
 ];
 
-export const corsMiddleware = ({ acceptedOrigins = ACCEPTED_ORIGINS } = {}) =>
-  cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      if (acceptedOrigins.includes(origin)) return callback(null, true);
+export const corsMiddleware = cors({
+  origin: (origin, callback) => {
+    // permitir requests sin origin (ej: Postman, server-to-server)
+    if (!origin) return callback(null, true);
 
-      return callback(null, false);
-    },
-  });
+    // permitir si está en la whitelist
+    if (ACCEPTED_ORIGINS.includes(origin)) return callback(null, true);
+
+    // bloquear CORS sin lanzar error 500
+    console.warn("Blocked CORS request from origin:", origin);
+    return callback(null, false);
+  },
+});
