@@ -15,6 +15,9 @@ app.use(express.json());
 // 🔹 CORS antes de las rutas
 app.use(corsMiddleware);
 
+// Opcional: permitir OPTIONS global
+app.options("*", corsMiddleware);
+
 // 🔹 Rutas
 app.use("/api/products", productsRouter);
 app.use("/api/categories", categoriesRouter);

@@ -9,12 +9,19 @@ const cors_1 = require("./middlewares/cors");
 const category_routes_1 = require("./routes/category-routes");
 const user_routes_1 = require("./routes/user-routes");
 const order_routes_1 = require("./routes/order-routes");
+const errorHandler_1 = require("./middlewares/errorHandler");
 const app = (0, express_1.default)();
 app.disable("x-powered-by");
 app.use(express_1.default.json());
-app.use((0, cors_1.corsMiddleware)());
+// 🔹 CORS antes de las rutas
+app.use(cors_1.corsMiddleware);
+// Opcional: permitir OPTIONS global
+app.options("*", cors_1.corsMiddleware);
+// 🔹 Rutas
 app.use("/api/products", product_routes_1.productsRouter);
 app.use("/api/categories", category_routes_1.categoriesRouter);
 app.use("/api/users", user_routes_1.usersRouter);
 app.use("/api/orders", order_routes_1.ordersRouter);
+// 🔹 Error handler al final
+app.use(errorHandler_1.errorHandler);
 exports.default = app;

@@ -8,20 +8,16 @@ const ALLOWED_ORIGINS = [
   "https://www.logibuy-frontend.vercel.app",
 ];
 
-// Configuración de CORS
 export const corsMiddleware = cors({
   origin: (origin, callback) => {
-    // Peticiones sin origin (Postman, servidores internos) se permiten
-    if (!origin) return callback(null, true);
-
-    if (ALLOWED_ORIGINS.includes(origin)) {
-      return callback(null, true);
-    }
-
+    if (!origin) return callback(null, true); // Postman o servidores internos
+    if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
     console.warn("CORS denied for origin:", origin);
     return callback(new Error("CORS policy: Origin not allowed"));
   },
   methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true, // importante si tu frontend envía cookies o auth headers
+  credentials: true,
+  preflightContinue: false, // **Importante**: Express 5 requiere esto
+  optionsSuccessStatus: 204, // Devuelve 204 a las preflights OPTIONS
 });

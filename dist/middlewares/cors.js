@@ -4,23 +4,26 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.corsMiddleware = void 0;
+// src/middlewares/cors.ts
 const cors_1 = __importDefault(require("cors"));
-const ACCEPTED_ORIGINS = [
-    "http://localhost:57031",
-    "http://localhost:1234",
+const ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:3001",
-    "http://localhost:3003",
+    "https://logibuy-frontend.vercel.app",
+    "https://www.logibuy-frontend.vercel.app",
 ];
-const corsMiddleware = ({ acceptedOrigins = ACCEPTED_ORIGINS } = {}) => (0, cors_1.default)({
+exports.corsMiddleware = (0, cors_1.default)({
     origin: (origin, callback) => {
-        if (origin && acceptedOrigins?.includes(origin)) {
+        if (!origin)
+            return callback(null, true); // Postman o servidores internos
+        if (ALLOWED_ORIGINS.includes(origin))
             return callback(null, true);
-        }
-        if (!origin) {
-            return callback(null, true);
-        }
-        return callback(new Error("Not allowed by CORS."));
+        console.warn("CORS denied for origin:", origin);
+        return callback(new Error("CORS policy: Origin not allowed"));
     },
+    methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+    preflightContinue: false, // **Importante**: Express 5 requiere esto
+    optionsSuccessStatus: 204, // Devuelve 204 a las preflights OPTIONS
 });
-exports.corsMiddleware = corsMiddleware;
