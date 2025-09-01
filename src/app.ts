@@ -8,8 +8,8 @@ const app = express();
 
 app.disable("x-powered-by");
 
+app.use(corsMiddleware);
 app.use(express.json());
-app.use(corsMiddleware());
 
 app.use("/api/products", productsRouter);
 

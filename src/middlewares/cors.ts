@@ -1,25 +1,29 @@
 import cors from "cors";
 
+// Lista de orígenes permitidos
 const ACCEPTED_ORIGINS = [
   "http://localhost:57031",
   "http://localhost:1234",
   "http://localhost:3000",
   "http://localhost:3001",
   "http://localhost:3003",
-  "https://e-commerce-api-production-0e59.up.railway.app",
   "https://logibuy-frontend.vercel.app",
 ];
 
-export const corsMiddleware = ({ acceptedOrigins = ACCEPTED_ORIGINS } = {}) =>
-  cors({
-    origin: (origin, callback) => {
-      console.log("CORS origin:", origin);
-      if (origin && acceptedOrigins?.includes(origin)) {
-        return callback(null, true);
-      }
-      if (!origin) {
-        return callback(null, true);
-      }
-      return callback(new Error("Not allowed by CORS."));
-    },
-  });
+// Middleware de CORS
+export const corsMiddleware = cors({
+  origin: (origin, callback) => {
+    // Peticiones sin 'origin' (Postman, curl, navegador directo) se permiten
+    if (!origin) return callback(null, true);
+
+    // Permitir si el origen está en la lista
+    if (ACCEPTED_ORIGINS.includes(origin)) {
+      return callback(null, true);
+    }
+
+    // Si no coincide, devolver error CORS
+    console.warn("Bloqueado por CORS, origin:", origin);
+    return callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true, // permite cookies o headers de autenticación
+});
