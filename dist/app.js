@@ -1,0 +1,20 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const product_routes_1 = require("./routes/product-routes");
+const cors_1 = require("./middlewares/cors");
+const category_routes_1 = require("./routes/category-routes");
+const user_routes_1 = require("./routes/user-routes");
+const order_routes_1 = require("./routes/order-routes");
+const app = (0, express_1.default)();
+app.disable("x-powered-by");
+app.use(express_1.default.json());
+app.use((0, cors_1.corsMiddleware)());
+app.use("/api/products", product_routes_1.productsRouter);
+app.use("/api/categories", category_routes_1.categoriesRouter);
+app.use("/api/users", user_routes_1.usersRouter);
+app.use("/api/orders", order_routes_1.ordersRouter);
+exports.default = app;

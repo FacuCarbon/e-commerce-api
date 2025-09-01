@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.categoriesRouter = void 0;
+const express_1 = require("express");
+const category_controller_1 = require("../controllers/category-controller");
+const auth_middleware_1 = require("../middlewares/auth.middleware");
+exports.categoriesRouter = (0, express_1.Router)();
+exports.categoriesRouter.get("/", category_controller_1.CategoryController.getAllCategories);
+exports.categoriesRouter.get("/:id", category_controller_1.CategoryController.getCategoryById);
+exports.categoriesRouter.post("/", auth_middleware_1.verifyFirebaseToken, category_controller_1.CategoryController.createCategory);
+exports.categoriesRouter.patch("/:id", auth_middleware_1.verifyFirebaseToken, category_controller_1.CategoryController.updateCategory);
+exports.categoriesRouter.delete("/:id", auth_middleware_1.verifyFirebaseToken, category_controller_1.CategoryController.deleteCategory);
