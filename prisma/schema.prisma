@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id
+  email     String   @unique
+  name      String?
+  avatar    String?
+  role      String   @default("user")
+  orders    Order[]
+  createdAt DateTime @default(now())
+}
+
+model Product {
+  id          String      @id @default(uuid())
+  name        String
+  description String?
+  price       Float
+  discount    Float       @default(0)
+  image       String?
+  stock       Int
+  rating      Float       @default(0)
+  categoryId  Int
+  category    Category    @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  orderItems  OrderItem[]
+}
+
+model Category {
+  id       Int        @id @default(autoincrement())
+  name     String     @unique
+  parentId Int?
+  parent   Category?  @relation("Subcategories", fields: [parentId], references: [id], onDelete: Cascade)
+  children Category[] @relation("Subcategories")
+  products Product[]
+}
+
+model Order {
+  id        Int         @id @default(autoincrement())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+  status    String      @default("pending") // pending, paid, canceled
+  total     Float       @default(0)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  items     OrderItem[]
+  payment   Payment?
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  productId String
+  quantity  Int
+  price     Float
+  order     Order   @relation(fields: [orderId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model PaymentMethod {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique // Ej: "MercadoPago", "Tarjeta", "Efectivo"
+  payments Payment[]
+}
+
+model Payment {
+  id            Int      @id @default(autoincrement())
+  orderId       Int      @unique
+  methodId      Int
+  status        String   @default("pending") // pending, approved, rejected
+  transactionId String? // ID provisto por MercadoPago o el proveedor
+  amount        Float
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  order  Order         @relation(fields: [orderId], references: [id])
+  method PaymentMethod @relation(fields: [methodId], references: [id])
+}

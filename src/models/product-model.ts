@@ -1,89 +1,48 @@
-import { readJson, writeJson } from "../utils/read-json";
-import { randomUUID } from "node:crypto";
-import { Product } from "../types/product-types";
-
+import { Prisma } from "@prisma/client";
+import { prisma } from "../prisma/client";
 interface FiltersProduct {
-  category?: string;
+  categoryId?: number;
   sortPrice?: "asc" | "desc";
 }
 
 export class ProductModel {
-  static async getAll({ category, sortPrice }: FiltersProduct) {
-    const products: Product[] = await readJson();
-    if (category) {
-      const productsCategory = products?.filter(
-        (product) => product?.category === category
-      );
-      return productsCategory;
-    }
-
-    if (sortPrice) {
-      const productsSortPrice = products?.sort((a, b) =>
-        sortPrice === "asc" ? a?.price - b?.price : b?.price - a?.price
-      );
-      return productsSortPrice;
-    }
-
-    return products;
+  static async getAll({ categoryId, sortPrice }: FiltersProduct) {
+    return await prisma.product.findMany({
+      where: categoryId ? { categoryId } : undefined,
+      orderBy: sortPrice ? { price: sortPrice } : undefined,
+      include: { category: true },
+    });
   }
 
-  //
   static async getProductById({ id }: { id: string }) {
-    const products: Product[] = await readJson();
-    const product = products?.find((product) => product?.id === id);
-
-    return product;
+    return await prisma.product.findUnique({
+      where: { id },
+      include: { category: true },
+    });
   }
 
-  //
-  static async createProduct(product: Omit<Product, "id">) {
-    const products: Product[] = await readJson();
-    const newProduct = {
-      id: randomUUID(),
-      ...product,
-    };
-    products?.push(newProduct);
-    await writeJson(products);
-    return newProduct;
+  static async createProduct(data: Omit<Prisma.ProductCreateInput, "id">) {
+    return await prisma.product.create({
+      data,
+    });
   }
-
-  //
 
   static async deleteProductById({ id }: { id: string }) {
-    const products: Product[] = await readJson();
-    const index = products?.findIndex((product) => product?.id === id);
-    if (index === -1) {
-      return;
-    }
-    products?.splice(index, 1);
-    await writeJson(products);
+    return await prisma.product.delete({
+      where: { id },
+    });
   }
-
-  //
 
   static async updateProductById({
     id,
     product,
   }: {
     id: string;
-    product: Partial<Omit<Product, "id">>;
+    product: Partial<Omit<Prisma.ProductUpdateInput, "id">>;
   }) {
-    const products: Product[] = await readJson();
-    const index = products.findIndex((p) => p?.id === id);
-
-    if (index === -1) return;
-
-    const existingProduct = products[index];
-
-    const updatedProduct = {
-      ...existingProduct,
-      ...product,
-    };
-
-    products[index] = updatedProduct;
-
-    await writeJson(products);
-
-    return updatedProduct;
+    return await prisma.product.update({
+      where: { id },
+      data: product,
+    });
   }
 }

@@ -1,86 +1,128 @@
 import { Request, Response } from "express";
 import { ProductModel } from "../models/product-model";
+import { CategoryModel } from "../models/category-model";
 
 export class ProductController {
-  static async getAll(request: Request, response: Response) {
-    const category = request.query?.category as string;
-    const sortPrice = request?.query?.sortPrice as "asc" | "desc";
-    const products = await ProductModel.getAll({ category, sortPrice });
+  static async getAll(request: Request, response: Response): Promise<void> {
+    try {
+      const categoryName = request.query?.category as string;
+      const sortPrice = request.query?.sortPrice as "asc" | "desc";
 
-    response.status(200).json({
-      count: products?.length,
-      products: products,
-    });
+      let categoryId: number | undefined;
+
+      if (categoryName) {
+        const categoryData = await CategoryModel.getCategoryByName(
+          categoryName
+        );
+        if (!categoryData) {
+          response.status(404).json({ error: "Categoría no encontrada" });
+        }
+        categoryId = categoryData?.id;
+      }
+
+      const products = await ProductModel.getAll({ categoryId, sortPrice });
+
+      response.status(200).json({
+        count: products.length,
+        products,
+      });
+    } catch (error) {
+      console.error("Error al obtener todos los productos:", error);
+      response
+        .status(500)
+        .json({ error: "Error al obtener todos los productos" });
+    }
   }
+
   //
   static async getProduct(request: Request, response: Response) {
-    const { id } = request.params;
+    try {
+      const { id } = request.params;
 
-    if (!id) {
-      response
-        .status(400)
-        .json({ message: "El id del producto no puede estar vacio." });
+      if (!id) {
+        response
+          .status(400)
+          .json({ message: "El id del producto no puede estar vacio." });
+      }
+      const product = await ProductModel.getProductById({ id });
+
+      if (!product) {
+        response.status(404).json({ message: "Producto no encontrado." });
+      }
+
+      response.status(200).json(product);
+    } catch (error) {
+      console.error("Error al obtener producto:", error);
+      response.status(500).json({ error: "Error al obtener producto" });
     }
-    const product = await ProductModel.getProductById({ id });
-
-    if (!product) {
-      response.status(404).json({ message: "Producto no encontrado." });
-    }
-
-    response.status(200).json(product);
   }
   //
   static async createProduct(request: Request, response: Response) {
-    const product = request.body;
-    const newProduct = await ProductModel.createProduct(product);
-    if (!newProduct?.id) {
-      response.status(500).json({ message: "Error al crear el producto." });
+    try {
+      const product = request.body;
+      const newProduct = await ProductModel.createProduct(product);
+      if (!newProduct?.id) {
+        response.status(500).json({ message: "Error al crear el producto." });
+      }
+      response.status(201).json({
+        message: "Producto creado con éxito.",
+        product: newProduct,
+      });
+    } catch (error) {
+      console.error("Error al crear producto:", error);
+      response.status(500).json({ error: "Error al crear producto" });
     }
-    response.status(201).json({
-      message: "Producto creado con éxito.",
-      product: newProduct,
-    });
   }
   //
 
   static async deleteProduct(request: Request, response: Response) {
-    const { id } = request.params;
+    try {
+      const { id } = request.params;
 
-    if (!id) {
-      response
-        .status(404)
-        .json({ message: "El id del producto no puede estar vacio." });
+      if (!id) {
+        response
+          .status(404)
+          .json({ message: "El id del producto no puede estar vacio." });
+      }
+
+      const product = await ProductModel.getProductById({ id });
+      if (!product) {
+        response.status(404).json({ message: "Producto no encontrado." });
+      }
+
+      await ProductModel.deleteProductById({ id });
+
+      response.status(200).json({ message: "Producto eliminado con éxito." });
+    } catch (error) {
+      console.error("Error al eliminar producto:", error);
+      response.status(500).json({ error: "Error al eliminar producto" });
     }
-
-    const product = await ProductModel.getProductById({ id });
-    if (!product) {
-      response.status(404).json({ message: "Producto no encontrado." });
-    }
-
-    await ProductModel.deleteProductById({ id });
-
-    response.status(200).json({ message: "Producto eliminado con éxito." });
   }
 
   //
 
   static async updateProduct(request: Request, response: Response) {
-    const { id } = request.params;
-    const product = request.body;
+    try {
+      const { id } = request.params;
+      const product = request.body;
 
-    if (!id) {
-      response
-        .status(404)
-        .json({ message: "El id del producto no puede estar vacio." });
+      if (!id) {
+        response
+          .status(404)
+          .json({ message: "El id del producto no puede estar vacio." });
+      }
+
+      const productById = await ProductModel.getProductById({ id });
+      if (!productById) {
+        response.status(404).json({ message: "Producto no encontrado." });
+      }
+
+      await ProductModel.updateProductById({ id, product });
+
+      response.status(200).json({ message: "Producto actualizado con éxito." });
+    } catch (error) {
+      console.error("Error al actualizar producto:", error);
+      response.status(500).json({ error: "Error al actualizar producto" });
     }
-
-    const productById = await ProductModel.getProductById({ id });
-    if (!productById) {
-      response.status(404).json({ message: "Producto no encontrado." });
-    }
-
-    await ProductModel.updateProductById({ id, product });
-
-    response.status(200).json({ message: "Producto actualizado con éxito." });
   }
 }

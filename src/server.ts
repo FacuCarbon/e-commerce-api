@@ -1,9 +1,7 @@
 import app from "./app";
 
-const PORT = process.env.PORT || 3003;
+const PORT = process.env.PORT || 8000;
 
 app.listen(PORT, () => {
-  console.log(
-    `El servidor está corriendo en el puerto http://localhost:${PORT}`
-  );
+  console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
